@@ -290,7 +290,7 @@ if 'viagens_salvas' not in st.session_state: st.session_state['viagens_salvas'] 
 
 if st.session_state.etapa == "Login":
     st.markdown("# 🤖 GUIA DE VIAGENS IA")
-    st.markdown("<div class=\'card\'><b>🔒 ACESSO RESTRITO A CLIENTES DO QUIZ COM PRÊMIOS</b><br>🔗 quizcompremios.com.br</div>", unsafe_allow_html=True)
+    st.markdown("<div class=\'card\'><b>🔒 ACESSO RESTRITO A CLIENTES DO QUIZ COM PRÊMIOS</b><br>🔗 <a href='https://quizcompremios.com.br' target='_blank' style='color:#4F46E5;font-weight:700;text-decoration:underline;'>quizcompremios.com.br</a></div>", unsafe_allow_html=True)
     st.info("💻 **Dica:** Pela complexidade dos agentes, no computador a experiência é mais agradável.")
     with st.container():
         nome  = st.text_input("Seu Nome:", key="nome_login")
@@ -315,6 +315,27 @@ elif st.session_state.etapa == "App":
 
     # TABS — navegação nativa
     _tab_Home, _tab_Roteiro, _tab_Brasil, _tab_Orcamento, _tab_Frases, _tab_Checklist, _tab_Grupo, _tab_Salvos, _tab_Destino, _tab_Mapa, _tab_Moeda, _tab_Clima, _tab_Seguranca, _tab_Historia, _tab_PDF, _tab_Economizar, _tab_Armadilha, _tab_Pessoas = st.tabs(['🏠 Home', '🗺️ Roteiro', '🇧🇷 Brasil', '💰 Orcamento', '🗣️ Frases', '🧳 Checklist', '👥 Grupo', '❤️ Salvos', '🌍 Destino', '🗺 Mapa', '💱 Moeda', '🌤️ Clima', '🛡️ Seguranca', '🏛️ Historia', '📄 PDF', '💸 Economizar', '🚫 Armadilha', '🤝 Pessoas'])
+
+    # ── BARRA SALVAR — aparece em todas as abas ──
+    with st.expander("💾 Salvar / Carregar meus dados", expanded=False):
+        _bsc1, _bsc2 = st.columns(2)
+        with _bsc1:
+            import json as _jsv
+            _dsv = {k: st.session_state.get(k) for k in list(st.session_state.keys()) if not k.startswith('_') and k not in ('api_key',)}
+            st.download_button("💾 Baixar meus dados (.json)",
+                data=_jsv.dumps(_dsv, ensure_ascii=False, indent=2, default=str),
+                file_name=f"dados_{st.session_state.get('usuario','user')}.json",
+                mime="application/json", key="dl_barra_sv_guiaviag")
+        with _bsc2:
+            _fupsv = st.file_uploader("📂 Carregar dados salvos:", type=["json"], key="ul_barra_sv_guiaviag", label_visibility="collapsed")
+            if _fupsv:
+                try:
+                    import json as _jld
+                    for _k2,_v2 in _jld.loads(_fupsv.read().decode()).items():
+                        if _k2 not in ('api_key','etapa'): st.session_state[_k2] = _v2
+                    st.success("✅ Dados restaurados!"); st.rerun()
+                except: st.error("Arquivo inválido.")
+
 
     with _tab_Home:
             col_u, col_r = st.columns([3, 1])
