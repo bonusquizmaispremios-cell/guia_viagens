@@ -111,10 +111,22 @@ def gerar_json_sessao() -> str:
     dados['salvo_em'] = datetime.now().strftime('%d/%m/%Y %H:%M')
     return json.dumps(dados, ensure_ascii=False, indent=2, default=str)
 
-def carregar_json_sessao(dados: dict):
-    for k in CHAVES_SALVAR:
-        if k in dados:
-            st.session_state[k] = dados[k]
+def carregar_json_sessao(dados):
+    _bloq = {'api_key','etapa','nome_login','chave_login','upload_login','btn_entrar_login'}
+    _pref = (
+        'btn_','sel_','ul_','dl_','cad_','_sub','_sm','_tab','_bsc',
+        'ativo_','rem_','sel_pet_','ev_','prof_','hig_','prev_',
+        'vac_','sint_','comp_','trad_','subs_','amb_','viag_','chat_',
+        'duvida_','emerg_','peso_','data_','obs_','tipo_','vet_','desc_',
+        'local_','prox_','alim','sit_emerg_','tc_','oraf','siau','agmag',
+        'lv','mv','pt','pi','sh','wc','rv','rp','rc',
+    )
+    import re as _re
+    for k, v in dados.items():
+        if k in _bloq: continue
+        if any(k.startswith(p) for p in _pref): continue
+        if _re.match(r'.+_\d+$', k): continue
+        st.session_state[k] = v
 
 def salvar_perfil_cache(usuario: str):
     _cache["perfis"][usuario] = {k: st.session_state.get(k) for k in CHAVES_SALVAR}
@@ -222,6 +234,8 @@ REGRAS:
             model="openai/gpt-oss-120b",
         )
         txt = response.choices[0].message.content
+        if txt: st.session_state['res_geral_guiavi1'] = str(txt)
+        if txt: st.session_state['res__guiavi1'] = txt
         # Corrige cifrão quebrado gerado pelo modelo — múltiplos padrões
         import re as _re
         # R` R' R´ R` seguido de número
